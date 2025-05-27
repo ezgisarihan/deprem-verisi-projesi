@@ -1,56 +1,97 @@
 # Türkiye Depremleri Veri Bilimi Projesi
 
-Bu proje, 1915–2023 yılları arasında Türkiye’de meydana gelen depremleri analiz etmeyi ve bu depremleri büyüklüklerine göre sınıflandırmayı amaçlamaktadır. Veri bilimi araçları ve makine öğrenmesi algoritmaları kullanılarak kapsamlı bir analiz yapılmıştır.
+Bu projede, 1915–2023 yılları arasında Türkiye’de gerçekleşen depremler veri bilimi teknikleriyle analiz edilmiştir.  
+Projenin temel amacı, depremlerin yapısal özelliklerini (enlem, boylam, derinlik) kullanarak deprem büyüklüğünü tahmin edebilecek bir makine öğrenmesi modeli geliştirmektir.
 
-## 🔍 Projenin Amacı
+---
 
-Depremlerin **enlem, boylam ve derinlik** bilgilerini kullanarak büyüklük sınıfını ("Küçük", "Orta", "Büyük") tahmin eden bir sınıflandırma modeli oluşturmak.
+## 🎯 Projenin Amacı
 
-## 🧾 Kullanılan Veriler
+Depremlerin konumsal ve yapısal verilerini analiz ederek:
+- Veri seti üzerindeki genel dağılımları ortaya koymak (keşifsel veri analizi),
+- Türkiye’de deprem yoğunluğunu coğrafi olarak görselleştirmek,
+- Deprem büyüklüklerini “Küçük”, “Orta” ve “Büyük” sınıflarına ayırmak,
+- Bu sınıfları tahmin edebilecek sınıflandırma modelleri oluşturmak amaçlanmıştır.
 
-- **Veri seti:** 1915-2023 arası Türkiye depremleri (Kaynak: Kaggle – Oğuzhan Bal)
-- **Dosya:** `archive.zip` → içindeki CSV dosyası kodda otomatik açılır
-- **Özellikler:** Enlem, boylam, derinlik, tarih, saat, büyüklük (Mw)
+---
 
-## 🧪 Kullanılan Araçlar ve Kütüphaneler
+## 📁 Veri Seti
 
-- Python (pandas, numpy, matplotlib, seaborn)
-- Folium (coğrafi harita görselleştirme)
-- scikit-learn (RandomForest, KNN, DecisionTree, ölçekleme, cross-validation)
+- **Kaynak:** Kaggle – “Turkey Earthquakes 1915–2023 May” (Oğuzhan Bal)
+- **Kayıt Sayısı:** ~20.000 satır
+- **Sütunlar:** Tarih, saat, enlem, boylam, derinlik, büyüklük (Mw), yer bilgisi
+- **Kullanılan Dosya:** `archive.zip` içinde `turkey_earthquakes(1915-2023_may).csv`
 
-## 🧹 Veri Temizleme
+---
 
-- Eksik büyüklük değerleri çıkarıldı
-- Tarih ve saat `datetime` formatına dönüştürüldü
-- "Küçük", "Orta", "Büyük" sınıfları oluşturuldu
+## 🧪 Kullanılan Yöntemler
 
-## 📊 Görselleştirme
+### 📌 Veri Ön İşleme
+- Sadece gerekli sütunlar seçildi: tarih, saat, enlem, boylam, derinlik, Mw, yer
+- Eksik değer içeren satırlar (özellikle Mw olmayanlar) çıkarıldı
+- Tarih ve saat birleştirilerek `datetime` formatı oluşturuldu
+- Mw değerine göre sınıflandırma yapıldı:
+  - Küçük: Mw < 4.0
+  - Orta: 4.0 ≤ Mw ≤ 6.0
+  - Büyük: Mw > 6.0
 
-- Derinlik vs. büyüklük dağılım grafiği
-- En çok deprem olan şehirlerin bar grafiği
-- `deprem_haritasi.html` dosyasında Folium haritası
+### 📊 Görselleştirme
+- `matplotlib`, `seaborn` ve `folium` kullanılarak:
+  - Derinlik ve büyüklük scatter plot
+  - En çok deprem olan şehirlerin bar grafiği
+  - 500 büyük depremin interaktif harita üzerinde gösterimi (`deprem_haritasi.html`)
 
-## 🧠 Makine Öğrenmesi
+### 🧠 Makine Öğrenmesi
+- Özellikler: `latitude`, `longitude`, `depth_km`
+- Hedef: `magnitude_class` (Küçük, Orta, Büyük)
+- Veri eğitim/test (%75/%25) olarak ayrıldı
+- `StandardScaler` ile öznitelik ölçeklendi
+- Kullanılan Modeller:
+  - Random Forest (class_weight=‘balanced’)
+  - K-Nearest Neighbors (KNN)
+  - Decision Tree (class_weight=‘balanced’)
+- Değerlendirme metrikleri:
+  - `classification_report`, `confusion_matrix`, `cross_val_score` (F1-macro)
 
-Üç farklı model kullanıldı ve karşılaştırıldı:
-- Random Forest ✅ (en iyi performans)
-- K-Nearest Neighbors
-- Decision Tree
+---
 
-### 🎯 En iyi sonuç:
-**Random Forest**, `F1_macro` ortalamasında en yüksek başarıyı verdi. Özellikle “Orta” büyüklükteki depremleri yüksek doğrulukla tahmin etti.
+## 📈 Özet Sonuçlar
+
+- **Random Forest** modeli, en yüksek ortalama F1 skorunu verdi
+- KNN modeli daha basit yapısıyla orta seviyede performans sağladı
+- Decision Tree, özellikle “Büyük” deprem sınıfında düşük başarı gösterdi
+- En çok tahmin hatası, sınıf dağılımının dengesizliğinden dolayı “Orta” sınıfta gözlendi
+- Coğrafi görselleştirme sayesinde Türkiye’de deprem açısından riskli bölgeler kolayca tespit edildi
+
+---
 
 ## 📂 Proje Dosyaları
 
 | Dosya | Açıklama |
 |-------|----------|
-| `VeriBilimiProjesi.ipynb` | Jupyter Notebook – tüm analiz ve görselleştirme burada |
-| `earthquake_analysis.py` | Alternatif Python script versiyonu |
-| `archive.zip` | Ham veri dosyasını içerir (otomatik açılır) |
-| `deprem_haritasi.html` | İnteraktif deprem haritası |
-| `VeriBilimiGrup7_Sunum.pdf` | 
+
+| `earthquake_analysis.py` | Python script – notebook alternatifi |
+| `archive.zip` | Ham veri seti ZIP formatında |
+| `deprem_haritasi.html` | Folium ile oluşturulmuş interaktif harita |
+
+
+---
+
+## ⚙️ Kullanılan Kütüphaneler
+
+- `pandas`, `numpy` – veri işleme
+- `matplotlib`, `seaborn` – görselleştirme
+- `folium` – harita çizimi
+- `scikit-learn` – modelleme ve değerlendirme
+
+---
 
 ## 👩‍💻 Katkıda Bulunanlar
 
 - Ezgi Sarıhan  
 - Merve Karakuş
+
+---
+
+
+
